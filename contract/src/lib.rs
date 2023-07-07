@@ -4,6 +4,7 @@ use near_sdk::collections::UnorderedMap;
 use near_sdk::{
     env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise, PromiseOrValue,
 };
+use magic_crypt::{new_magic_crypt, MagicCryptTrait};
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -31,7 +32,10 @@ impl Contract {
         }
     }
 
-    pub fn set_contract(&mut self, cid: String, lang: String) {
+    pub fn set_contract(&mut self, encrypted_cid: String, lang: String) {
+        let mc: magic_crypt::MagicCrypt256 = new_magic_crypt!(&self.secret, 256);
+        let cid: String = mc.decrypt_base64_to_string(&encrypted_cid).unwrap();
+
         self.contracts.insert(&env::predecessor_account_id(), &ContractData {
             cid,
             lang,
