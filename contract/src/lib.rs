@@ -56,7 +56,11 @@ impl Contract {
         return self.contracts.get(&contract_id);
     }
 
-    pub fn get_contracts(&self) -> Vec<(AccountId, ContractData)> {
-        return self.contracts.to_vec();
+    pub fn get_contracts(&self, from_index: usize, limit: usize) -> Vec<(AccountId, ContractData)> {
+        return self.contracts
+        .iter()
+        .skip(from_index)
+        .take(limit)
+        .collect()
     }
 }
