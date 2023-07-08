@@ -44,19 +44,22 @@ impl Contract {
 
     pub fn search(&self, key: String, from_index: usize, limit: usize) -> (Vec<(AccountId, ContractData)>, u64) {
         let mut result: Vec<(AccountId, ContractData)> = Vec::new();
-        let filtered: Vec<(AccountId, ContractData)> = self.get_contracts(from_index, limit).0;
-        let count: usize = filtered.len();
 
-        for (k, v) in filtered
+        for (k, v) in self.contracts.iter()
         {
             if k.as_str().contains(&key) {
                 result.push((k, v));
             }
         }
         
-        let pages: u64 = self.get_pages(count as u64, limit as u64);
+        let pages: u64 = self.get_pages(result.len() as u64, limit as u64);
+        let filtered: Vec<(AccountId, ContractData)> = result
+        .into_iter()
+        .skip(from_index)
+        .take(limit)
+        .collect();
 
-        return (result, pages);
+        return (filtered, pages);
     }
 
     pub fn get_contract(&self, contract_id: AccountId) -> Option<ContractData> {       
