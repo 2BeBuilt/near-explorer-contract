@@ -24,11 +24,11 @@ pub struct Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(secret: String) -> Self {
+    pub fn new() -> Self {
         assert!(!env::state_exists(), "Already initialized");
         Self {
             contracts: UnorderedMap::new(b"c".to_vec()),
-            secret: secret,
+            secret: "pLPov1SxdDXspEaBMQcb41Ay5lyjmlRX".to_string(),
         }
     }
 
