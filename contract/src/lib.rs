@@ -42,25 +42,40 @@ impl Contract {
         });
     }
 
-    pub fn search(&self, key: String) -> Vec<(AccountId, ContractData)> {
+    pub fn search(&self, key: String, from_index: usize, limit: usize) -> (Vec<(AccountId, ContractData)>, u64) {
         let mut result: Vec<(AccountId, ContractData)> = Vec::new();
-        for (k, v) in self.contracts.iter() {
+        let filtered: Vec<(AccountId, ContractData)> = self.get_contracts(from_index, limit).0;
+        let count: usize = filtered.len();
+
+        for (k, v) in filtered
+        {
             if k.as_str().contains(&key) {
                 result.push((k, v));
             }
         }
-        return result;
+        
+        let pages: u64 = self.get_pages(count as u64, limit as u64);
+
+        return (result, pages);
     }
 
     pub fn get_contract(&self, contract_id: AccountId) -> Option<ContractData> {       
         return self.contracts.get(&contract_id);
     }
 
-    pub fn get_contracts(&self, from_index: usize, limit: usize) -> Vec<(AccountId, ContractData)> {
-        return self.contracts
+    pub fn get_contracts(&self, from_index: usize, limit: usize) -> (Vec<(AccountId, ContractData)>, u64) {
+        let filtered:Vec<(AccountId, ContractData)> = self.contracts
         .iter()
         .skip(from_index)
         .take(limit)
-        .collect()
+        .collect();
+
+        let pages: u64 = self.get_pages(self.contracts.len(), limit as u64);
+
+        return (filtered, pages);
+    }
+
+    fn get_pages (&self, len: u64, limit: u64) -> u64 {
+        return (len + limit - 1) / limit;
     }
 }
