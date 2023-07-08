@@ -42,7 +42,17 @@ impl Contract {
         });
     }
 
-    pub fn get_contract(&self, contract_id: AccountId) -> Option<ContractData> {        
+    pub fn search(&self, key: String) -> Vec<(AccountId, ContractData)> {
+        let mut result: Vec<(AccountId, ContractData)> = Vec::new();
+        for (k, v) in self.contracts.iter() {
+            if k.as_str().contains(&key) {
+                result.push((k, v));
+            }
+        }
+        return result;
+    }
+
+    pub fn get_contract(&self, contract_id: AccountId) -> Option<ContractData> {       
         return self.contracts.get(&contract_id);
     }
 
