@@ -46,8 +46,8 @@ impl Contract {
         let mut result: Vec<(AccountId, ContractData)> = Vec::new();
 
         for (k, v) in self.contracts.iter()
-        {
-            if k.as_str().contains(&key) {
+        {            
+            if k.as_str().to_lowercase().replace(".testnet", "").replace(".near", "").contains(&key.to_lowercase()) {
                 result.push((k, v));
             }
         }
