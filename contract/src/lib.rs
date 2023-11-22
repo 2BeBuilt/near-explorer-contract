@@ -17,7 +17,7 @@ pub struct ContractData {
     pub cid: String,
     pub lang: String,
     pub entry_point: String,
-    pub deploy_tx: String,
+    pub code_hash: String,
     pub github: Option<GithubData>,
 }
 
@@ -48,14 +48,14 @@ impl Contract {
         log!("Owner changed to {}", self.owner_id)
     }
 
-    pub fn set_contract(&mut self, cid: String, lang: String, entry_point: String, deploy_tx: String, github: Option<GithubData>) {
+    pub fn set_contract(&mut self, account_id: AccountId, cid: String, code_hash: String, lang: String, entry_point: String, github: Option<GithubData>) {
         require!(env::predecessor_account_id() == self.owner_id, "Only owner can call this method");
 
-        self.contracts.insert(&env::predecessor_account_id(), &ContractData {
+        self.contracts.insert(&account_id, &ContractData {
             cid: cid,
+            code_hash: code_hash,
             lang: lang,
             entry_point: entry_point,
-            deploy_tx: deploy_tx,
             github: match github {
                 Some(github_data) => Some(GithubData {
                     owner: github_data.owner.clone(),
