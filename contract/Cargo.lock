@@ -1143,8 +1143,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "source_scan"
-version = "1.0.0"
+name = "sourcescan"
+version = "2.0.0"
 dependencies = [
  "near-sdk",
  "uint",

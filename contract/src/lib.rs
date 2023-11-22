@@ -1,7 +1,7 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::collections::UnorderedMap;
-use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault};
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, log, require};
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -24,6 +24,7 @@ pub struct ContractData {
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
+    owner_id: AccountId,
     contracts: UnorderedMap<AccountId, ContractData>,
 }
 
@@ -32,12 +33,24 @@ impl Contract {
     #[init]
     pub fn new() -> Self {
         assert!(!env::state_exists(), "Already initialized");
+        
         Self {
+            owner_id: env::predecessor_account_id(),
             contracts: UnorderedMap::new(b"c".to_vec()),
         }
     }
 
+    pub fn set_owner(&mut self, owner_id: AccountId) {
+        require!(env::predecessor_account_id() == self.owner_id, "Only owner can call this method");
+
+        self.owner_id = owner_id;
+
+        log!("Owner changed to {}", self.owner_id)
+    }
+
     pub fn set_contract(&mut self, cid: String, lang: String, entry_point: String, deploy_tx: String, github: Option<GithubData>) {
+        require!(env::predecessor_account_id() == self.owner_id, "Only owner can call this method");
+
         self.contracts.insert(&env::predecessor_account_id(), &ContractData {
             cid: cid,
             lang: lang,
@@ -52,6 +65,8 @@ impl Contract {
                 None => None,
             },
         });
+
+        log!("Contract {} added", env::predecessor_account_id());
     }
 
     pub fn search(&self, key: String, from_index: usize, limit: usize) -> (Vec<(AccountId, ContractData)>, u64) {
