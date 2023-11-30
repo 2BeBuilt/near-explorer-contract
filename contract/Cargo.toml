@@ -2,7 +2,7 @@
 name = "sourcescan"
 version = "2.0.0"
 authors = ["Andrey Gruzdev"]
-edition = "2021"
+edition = "2018"
 
 [lib]
 crate-type = ["cdylib"]
