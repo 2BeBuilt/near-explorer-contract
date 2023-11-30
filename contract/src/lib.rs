@@ -48,6 +48,10 @@ impl Contract {
         log!("Owner changed to {}", self.owner_id)
     }
 
+    pub fn get_owner(&self) -> AccountId {
+        return self.owner_id.clone();
+    }
+
     pub fn set_contract(&mut self, account_id: AccountId, cid: String, code_hash: String, lang: String, entry_point: String, github: Option<GithubData>) {
         require!(env::predecessor_account_id() == self.owner_id, "Only owner can call this method");
 
