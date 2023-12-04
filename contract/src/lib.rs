@@ -93,6 +93,14 @@ impl Contract {
         return (filtered, pages);
     }
 
+    pub fn purge_contract(&mut self, account_id: AccountId) {
+        require!(env::predecessor_account_id() == self.owner_id, "Only owner can call this method");
+
+        self.contracts.remove(&account_id);
+
+        log!("Contract {} removed", account_id);
+    }
+
     pub fn get_contract(&self, account_id: AccountId) -> Option<ContractData> {       
         return self.contracts.get(&account_id);
     }
