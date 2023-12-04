@@ -93,8 +93,8 @@ impl Contract {
         return (filtered, pages);
     }
 
-    pub fn get_contract(&self, contract_id: AccountId) -> Option<ContractData> {       
-        return self.contracts.get(&contract_id);
+    pub fn get_contract(&self, account_id: AccountId) -> Option<ContractData> {       
+        return self.contracts.get(&account_id);
     }
 
     pub fn get_contracts(&self, from_index: usize, limit: usize) -> (Vec<(AccountId, ContractData)>, u64) {
