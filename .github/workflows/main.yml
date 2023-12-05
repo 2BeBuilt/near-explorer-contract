@@ -15,7 +15,8 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: List Directory Structure in Docker
+    - name: Run Build Script in Docker
       run: |
         docker pull nearprotocol/contract-builder@sha256:53b34ea28b8995c6e8908e76db8ea0b117ac73bc91c83c8aae930e635e9ef885
-        docker run --rm -v ${{ github.workspace }}:/workspace nearprotocol/contract-builder@sha256:53b34ea28b8995c6e8908e76db8ea0b117ac73bc91c83c8aae930e635e9ef885 ls -R /workspace
+        docker run --rm -v ${{ github.workspace }}:/workspace nearprotocol/contract-builder@sha256:53b34ea28b8995c6e8908e76db8ea0b117ac73bc91c83c8aae930e635e9ef885 /bin/bash -c "cd /workspace/contract && ./build.sh"
+    
