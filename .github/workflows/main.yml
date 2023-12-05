@@ -15,12 +15,9 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Set up Docker Build
-      run: |
-        docker build -t near-contract-builder .
-
     - name: Run Build Script in Docker
       run: |
-        docker run --rm -v ${{ github.workspace }}:/workspace near-contract-builder /workspace/contract/.build.sh
+        docker pull nearprotocol/contract-builder@sha256:53b34ea28b8995c6e8908e76db8ea0b117ac73bc91c83c8aae930e635e9ef885
+        docker run --rm -v ${{ github.workspace }}:/workspace nearprotocol/contract-builder@sha256:53b34ea28b8995c6e8908e76db8ea0b117ac73bc91c83c8aae930e635e9ef885 /workspace/contract/.build.sh
 
-    # You can add additional Docker steps or any other steps as needed
+    # Include any additional steps such as testing or deploying if necessary
