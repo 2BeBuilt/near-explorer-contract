@@ -4,8 +4,8 @@
 DEFAULT_IMAGE="nearprotocol/contract-builder:latest-amd64"
 CONTAINER_NAME="sourcescan-builder-rust"
 
-# Use the first argument as the image name, or default if no argument is provided
-IMAGE_NAME=${1:-$DEFAULT_IMAGE}
+IMAGE_NAME=$DEFAULT_IMAGE
+SCRIPT_TO_RUN=""
 
 # Function to check if a container exists
 container_exists() {
@@ -17,6 +17,19 @@ get_container_image() {
   docker inspect --format='{{.Config.Image}}' $CONTAINER_NAME
 }
 
+# Process command-line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -i|--image) IMAGE_NAME="$2"; shift ;;
+        -r|--run) SCRIPT_TO_RUN="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# Extract the directory part of the script path
+SCRIPT_DIR=$(dirname "$SCRIPT_TO_RUN")
+
 # Check if the container exists
 if container_exists; then
   echo "Container $CONTAINER_NAME already exists."
@@ -26,22 +39,31 @@ if container_exists; then
     echo "Existing container was created with a different image. Updating image..."
     docker stop $CONTAINER_NAME
     docker rm $CONTAINER_NAME
+  fi
+
+  # Run the provided script in the container after changing to its directory
+  if [ -n "$SCRIPT_TO_RUN" ]; then
+    docker start $CONTAINER_NAME
+    docker exec -it $CONTAINER_NAME bash -c "cd /host/$SCRIPT_DIR && ./$(basename $SCRIPT_TO_RUN)"
+  else
+    docker start -ai $CONTAINER_NAME
+  fi
+else
+  echo "Creating a new container..."
+  # Run the provided script in the new container, or open a bash shell if no script is provided
+  if [ -n "$SCRIPT_TO_RUN" ]; then
+    docker run \
+        --name $CONTAINER_NAME \
+        --mount type=bind,source="$(pwd)",target=/host \
+        --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
+        -it $IMAGE_NAME \
+        bash -c "cd /host/$SCRIPT_DIR && ./$(basename $SCRIPT_TO_RUN)"
+  else
     docker run \
         --name $CONTAINER_NAME \
         --mount type=bind,source="$(pwd)",target=/host \
         --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
         -it $IMAGE_NAME \
         /bin/bash
-  else
-    echo "Reusing existing container with the same image."
-    docker start -ai $CONTAINER_NAME
   fi
-else
-  echo "Creating a new container..."
-  docker run \
-      --name $CONTAINER_NAME \
-      --mount type=bind,source="$(pwd)",target=/host \
-      --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
-      -it $IMAGE_NAME \
-      /bin/bash
 fi
