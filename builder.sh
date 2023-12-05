@@ -39,18 +39,42 @@ if container_exists; then
     echo "Existing container was created with a different image. Updating image..."
     docker stop $CONTAINER_NAME
     docker rm $CONTAINER_NAME
-  fi
 
-  # Run the provided script in the container after changing to its directory
-  if [ -n "$SCRIPT_TO_RUN" ]; then
-    docker start $CONTAINER_NAME
-    docker exec -it $CONTAINER_NAME bash -c "cd /host/$SCRIPT_DIR && ./$(basename $SCRIPT_TO_RUN)"
+    # Check if the container was successfully removed
+    if ! container_exists; then
+      echo "Container successfully removed. Creating a new one..."
+      # Logic for creating a new container
+      if [ -n "$SCRIPT_TO_RUN" ]; then
+        docker run \
+            --name $CONTAINER_NAME \
+            --mount type=bind,source="$(pwd)",target=/host \
+            --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
+            -it $IMAGE_NAME \
+            bash -c "cd /host/$SCRIPT_DIR && ./$(basename $SCRIPT_TO_RUN)"
+      else
+        docker run \
+            --name $CONTAINER_NAME \
+            --mount type=bind,source="$(pwd)",target=/host \
+            --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
+            -it $IMAGE_NAME \
+            /bin/bash
+      fi
+    else
+      echo "Failed to remove the container. Please check Docker status."
+      exit 1
+    fi
   else
-    docker start -ai $CONTAINER_NAME
+    # Logic for reusing existing container
+    if [ -n "$SCRIPT_TO_RUN" ]; then
+      docker start $CONTAINER_NAME
+      docker exec -it $CONTAINER_NAME bash -c "cd /host/$SCRIPT_DIR && ./$(basename $SCRIPT_TO_RUN)"
+    else
+      docker start -ai $CONTAINER_NAME
+    fi
   fi
 else
   echo "Creating a new container..."
-  # Run the provided script in the new container, or open a bash shell if no script is provided
+  # Logic for creating a new container
   if [ -n "$SCRIPT_TO_RUN" ]; then
     docker run \
         --name $CONTAINER_NAME \
