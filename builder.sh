@@ -28,7 +28,7 @@ if container_exists; then
     docker rm $CONTAINER_NAME
     docker run \
         --name $CONTAINER_NAME \
-        --mount type=bind,source=${HOST_DIR:-$(pwd)/..},target=/host \
+        --mount type=bind,source="$(pwd)",target=/host \
         --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
         -it $IMAGE_NAME \
         /bin/bash
@@ -40,7 +40,7 @@ else
   echo "Creating a new container..."
   docker run \
       --name $CONTAINER_NAME \
-      --mount type=bind,source=${HOST_DIR:-$(pwd)/..},target=/host \
+      --mount type=bind,source="$(pwd)",target=/host \
       --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
       -it $IMAGE_NAME \
       /bin/bash
